@@ -252,7 +252,7 @@
       cursor: pointer;
       z-index: 20;
       opacity: 0;
-      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
       backface-visibility: hidden;
     }
 
@@ -269,9 +269,9 @@
       cursor: default !important;
     }
 
+    /* Smooth scale on hover/focus */
     .pin-btn:not(.viewed):hover, 
-    .pin-btn:not(.viewed):focus-visible,
-    .pin-btn.pin-active {
+    .pin-btn:not(.viewed):focus-visible {
       transform: translate(-50%, -100%) scale(1.25) !important;
     }
 
@@ -385,17 +385,18 @@
     /* CIRCULAR SPOTLIGHT FRAME */
     .spotlight-circle-frame {
       position: absolute;
-      top: var(--cy, 33%);
-      left: var(--cx, 55.5%);
+      top: 36%;
+      left: calc(55.5% + var(--dx, 0px));
       transform: translate(-50%, -50%);
       width: 132px;
       height: 132px;
       border-radius: 50%;
       border: 2px solid #ffffff;
       overflow: hidden;
-      z-index: 330;
+      z-index: 320;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
       background-color: #ffffff;
+      pointer-events: auto;
     }
 
     .spotlight-circle-frame img.spotlight-map-bg {
@@ -408,23 +409,21 @@
       display: block;
     }
 
-    /* Spotlight Pin with hover scaling matching Video 1 */
+    /* Spotlight Pin - begins scaled to seamlessly match the map pin's hover state */
     .spotlight-pin-icon {
       position: absolute;
       top: 53.1%;
       left: 50.8%;
-      transform: translate(-50%, -100%) scale(1);
+      transform: translate(-50%, -100%) scale(1.25);
       width: 21px;
       height: auto;
-      z-index: 335;
+      z-index: 325;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
-      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-      pointer-events: auto;
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    .spotlight-pin-icon.scaled,
-    .spotlight-pin-icon:hover {
-      transform: translate(-50%, -100%) scale(1.25);
+    .spotlight-pin-icon.normal-scale {
+      transform: translate(-50%, -100%) scale(1);
     }
 
     /* DIALOG CARD */
@@ -812,14 +811,8 @@
     <div class="dark-overlay" id="content-modal">
       <div class="spotlight-view-container" id="spotlight-container">
         
-        <!-- CIRCULAR SPOTLIGHT FRAME -->
-        <div class="spotlight-circle-frame" id="spotlight-circle">
-          <img src="" id="spotlight-map-bg" alt="Regional Map Spotlight" class="spotlight-map-bg">
-          <img src="Resources/PastedVector-25.svg" alt="Location Pin" class="spotlight-pin-icon">
-        </div>
-
         <div class="spotlight-stack" id="spotlight-stack">
-          <!-- TRIANGLE BEAM -->
+          <!-- TRIANGLE BEAM + CIRCLE FRAME -->
           <div class="spotlight-beam" id="spotlight-beam">
             <div class="spotlight-triangle-clip">
               <img src="Resources/PastedVector-30.svg" alt="" class="spotlight-triangle-bg">
@@ -829,6 +822,12 @@
             <svg class="spotlight-wedge" id="spotlight-wedge" aria-hidden="true">
               <polygon id="spotlight-wedge-poly" fill="#141F52"></polygon>
             </svg>
+
+            <!-- CIRCULAR SPOTLIGHT FRAME -->
+            <div class="spotlight-circle-frame" id="spotlight-circle">
+              <img src="" id="spotlight-map-bg" alt="Regional Map Spotlight" class="spotlight-map-bg">
+              <img src="Resources/PastedVector-25.svg" alt="Location Pin" class="spotlight-pin-icon" id="spotlight-pin">
+            </div>
           </div>
 
           <!-- DIALOG CARD -->
@@ -940,20 +939,15 @@
     const spotlightContainer = document.getElementById('spotlight-container');
     const spotlightMapBg = document.getElementById('spotlight-map-bg');
     const spotlightCircle = document.getElementById('spotlight-circle');
-    const spotlightPin = document.querySelector('.spotlight-pin-icon');
+    const spotlightPin = document.getElementById('spotlight-pin');
 
     const viewedMap = new Set();
     let activePin = null;
 
-    // Remove scaled hover class from spotlight pin when mouse moves away
-    if (spotlightPin) {
-      spotlightPin.addEventListener('mouseleave', () => {
-        spotlightPin.classList.remove('scaled');
-      });
-    }
+    // Smoothly transition spotlight pin scale when mouse leaves the circle
     if (spotlightCircle) {
       spotlightCircle.addEventListener('mouseleave', () => {
-        if (spotlightPin) spotlightPin.classList.remove('scaled');
+        if (spotlightPin) spotlightPin.classList.add('normal-scale');
       });
     }
 
@@ -1027,13 +1021,9 @@
       poly.setAttribute('points', [p1, t1, t2, p2].map(p => p.join(',')).join(' '));
     }
 
-    function alignSpotlightToPin(pin) {
-      if (!pin) return;
-      if (spotlightContainer.classList.contains('layout-left')) {
-        alignLeftLayout(pin);
-        return;
-      }
-
+    // Default layout (Ukraine): stack placed so circle sits directly over Ukraine pin
+    function alignDefaultLayout(pin) {
+      const app = document.getElementById('interactive-app');
       const stage = document.querySelector('.stage-view');
       const stack = document.getElementById('spotlight-stack');
       const circle = document.getElementById('spotlight-circle');
@@ -1043,18 +1033,33 @@
       card.style.top = '';
       card.style.bottom = '';
       stack.style.transform = '';
+      circle.style.setProperty('--dx', '0px');
 
-      // Direct coordinates relative to the interactive container
+      const appRect = app.getBoundingClientRect();
+      const scale = appRect.width / app.offsetWidth || 1;
+
       const gap = pin.offsetHeight - pinImg.offsetHeight;
       const tipX = stage.offsetLeft + pin.offsetLeft;
       const tipY = stage.offsetTop + pin.offsetTop - gap;
 
-      const size = circle.offsetWidth || 132;
-      const cx = tipX - (0.508 - 0.5) * size;
-      const cy = tipY - (0.531 - 0.5) * size;
+      const c = circle.getBoundingClientRect();
+      const cx = (c.left + c.width / 2 - appRect.left) / scale;
+      const cy = (c.top + c.height / 2 - appRect.top) / scale;
 
-      circle.style.setProperty('--cx', cx + 'px');
-      circle.style.setProperty('--cy', cy + 'px');
+      let dy = tipY - cy;
+      let dx = tipX - cx;
+
+      stack.style.transform = 'translateY(' + dy + 'px)';
+      circle.style.setProperty('--dx', dx + 'px');
+    }
+
+    function alignSpotlightToPin(pin) {
+      if (!pin) return;
+      if (spotlightContainer.classList.contains('layout-left')) {
+        alignLeftLayout(pin);
+      } else {
+        alignDefaultLayout(pin);
+      }
     }
 
     window.addEventListener('resize', () => {
@@ -1098,10 +1103,10 @@
           spotlightContainer.className = "spotlight-view-container " + (data.layoutClass || "");
 
           activePin = e.currentTarget;
-          activePin.classList.add('pin-active');
 
+          // Reset spotlight pin to match initial hover scale
           if (spotlightPin) {
-            spotlightPin.classList.add('scaled');
+            spotlightPin.classList.remove('normal-scale');
           }
 
           alignSpotlightToPin(activePin);
@@ -1117,7 +1122,6 @@
         const pinBtn = activePin;
         const pinImg = pinBtn.querySelector('.pin-img');
         
-        pinBtn.classList.remove('pin-active');
         pinBtn.classList.add('swiveling');
         
         setTimeout(() => {
@@ -1130,10 +1134,6 @@
           pinBtn.classList.remove('swiveling');
           pinBtn.classList.add('viewed');
         }, 600);
-      }
-
-      if (spotlightPin) {
-        spotlightPin.classList.remove('scaled');
       }
 
       contentModal.classList.remove('active');
@@ -1166,7 +1166,6 @@
         p.classList.remove('viewed');
         p.classList.remove('animated');
         p.classList.remove('swiveling');
-        p.classList.remove('pin-active');
         const pinImg = p.querySelector('.pin-img');
         if (pinImg) {
           pinImg.src = 'Resources/PastedVector-25.svg';
@@ -1206,10 +1205,7 @@
 
         pin.addEventListener('mouseenter', on);
         pin.addEventListener('focus', on);
-        pin.addEventListener('mouseleave', () => {
-          off();
-          pin.classList.remove('pin-active');
-        });
+        pin.addEventListener('mouseleave', off);
         pin.addEventListener('blur', off);
         pin.addEventListener('click', off);
       });
