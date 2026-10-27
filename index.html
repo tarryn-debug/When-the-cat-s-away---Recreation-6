@@ -616,6 +616,9 @@
       color: var(--color-navy-dark) !important;
     }
 
+    /* ========================================================= */
+    /* BIBLIOGRAPHY MODAL (EXPANDED TO PREVENT SCROLL)           */
+    /* ========================================================= */
     .biblio-overlay {
       position: absolute;
       inset: 0;
@@ -624,7 +627,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 1rem;
       transition: opacity 0.3s ease;
     }
 
@@ -634,20 +637,38 @@
 
     .biblio-card {
       background: #ffffff;
-      border-radius: 6px;
-      width: 100%;
-      max-width: 750px;
-      max-height: 80vh;
-      padding: 2rem;
-      overflow-y: auto;
+      border-radius: 0;
+      width: 960px;
+      max-width: 92%;
+      max-height: 88vh;
+      padding: 1.5rem 2.25rem;
+      overflow: hidden;
       position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .biblio-card h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    .biblio-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
     }
 
     .biblio-card p {
-      font-size: 0.825rem;
-      margin-bottom: 0.75rem;
-      text-indent: -1.25rem;
-      padding-left: 1.25rem;
+      font-size: 0.735rem;
+      line-height: 1.32;
+      color: #222222;
+      text-indent: -1.5rem;
+      padding-left: 1.5rem;
+      word-break: break-all;
     }
 
     @media (max-width: 768px) {
@@ -662,6 +683,7 @@
       .spotlight-view-container.layout-left .dialog-card { width: 90%; left: 5%; }
       .spotlight-view-container.layout-left.card-wide .dialog-card,
       .spotlight-view-container.layout-left.card-wider .dialog-card { width: 90%; }
+      .biblio-card { max-height: 85vh; overflow-y: auto; padding: 1.25rem; }
     }
   </style>
 </head>
@@ -815,12 +837,19 @@
     <div class="biblio-overlay" id="biblio-overlay">
       <div class="biblio-card">
         <button class="close-card-btn" id="close-biblio-btn" aria-label="Close Bibliography">&times;</button>
-        <h3>Bibliography</h3>
-        <br>
-        <p>Council on Foreign Relations. n.d. <i>Conflict in Ukraine.</i> Available: https://www.cfr.org/global-conflict-tracker/conflict/conflict-ukraine [2021, February 23].</p>
-        <p>Council on Foreign Relations. n.d. <i>Conflict in Yemen.</i> Available: https://www.cfr.org/global-conflict-tracker/conflict/war-yemen [2021, February 23].</p>
-        <p>Falk, T.O. 2020. What the US troop withdrawal means for Iraq. <i>Aljazeera.</i> 22 November.</p>
-        <p>Fisher, M. 2014. Everything you need to know about the Ukraine crisis. <i>Vox.</i> 3 September.</p>
+        <h2>Bibliography</h2>
+        <div class="biblio-list">
+          <p>Council on Foreign Relations. n.d. <i>Conflict in Ukraine.</i> Available: https://www.cfr.org/global-conflict-tracker/conflict/conflict-ukraine [2021, February 23].</p>
+          <p>Council on Foreign Relations. n.d. <i>Conflict in Yemen.</i> Available: https://www.cfr.org/global-conflict-tracker/conflict/war-yemen [2021, February 23].</p>
+          <p>Falk, T.O. 2020. What the US troop withdrawal means for Iraq. <i>Aljazeera.</i> 22 November. Available: https://www.aljazeera.com/news/2020/11/22/what-the-us-troop-withdrawal-means-for-iraq [2021, February 23].</p>
+          <p>Fisher, M. 2014. Everything you need to know about the Ukraine crisis. 2014. <i>Vox.</i> 3 September. Available: https://www.vox.com/2014/9/3/18088560/ukraine-everything-you-need-to-know [2021, February 23].</p>
+          <p>Gilani, I. 2020. Timeline - Clashes, Standoffs between Chinese and Indian armies. <i>Anadolu Agency.</i> 16 June. Available: https://www.aa.com.tr/en/asia-pacific/timeline-clashes-standoffs-between-chinese-and-indian-armies/1879115# [2021, February 23].</p>
+          <p>History. 2020. <i>5-day long Russo-Georgian War begins.</i> Available: https://www.history.com/this-day-in-history/5-day-long-russo-georgian-war-begins [2021, February 23].</p>
+          <p>Martinez, L. 2019. Why the US Navy sails past disputed artificial islands claimed by China. <i>ABC News.</i> 6 May. Available: https://abcnews.go.com/Politics/us-navy-sails-past-disputed-artificial-islands-claimed/story?id=60993256#:~:text=In%202014%20China%20began%20massive,deployment%20of%20Chinese%20fighter%20jets [2021, February 23].</p>
+          <p>Rhodes, B. 2018. Inside the White House during the Syrian 'red line' crisis. <i>The Atlantic.</i> 3 June. Available: https://www.theatlantic.com/international/archive/2018/06/inside-the-white-house-during-the-syrian-red-line-crisis/561887/ [2021, February 23].</p>
+          <p>Turkey launches ground offensive in northern Syria. 2019. <i>BBC.</i> 9 October. Available: https://www.bbc.com/news/world-middle-east-49983357 [2021, February 23].</p>
+          <p>United Nations International Children's Emergency Fund. n.d <i>Yemen Crisis.</i> Available: https://www.unicef.org/emergencies/yemen-crisis [2021, February 23].</p>
+        </div>
       </div>
     </div>
 
@@ -1018,7 +1047,7 @@
       introModal.classList.remove('active');
     });
 
-    // 3. MAP PINS CLICK
+    // 3. MAP PINS CLICK: Swap data and update image before opening modal
     document.querySelectorAll('.pin-btn').forEach(pin => {
       pin.addEventListener('click', (e) => {
         const id = e.currentTarget.dataset.id;
