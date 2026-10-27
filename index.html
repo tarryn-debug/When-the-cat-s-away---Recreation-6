@@ -617,7 +617,7 @@
     }
 
     /* ========================================================= */
-    /* BIBLIOGRAPHY MODAL (PROPORTIONAL MARGINS & SPREAD)        */
+    /* BIBLIOGRAPHY MODAL (OPTIMIZED HEIGHT, 14px TEXT, EQUAL SPACING) */
     /* ========================================================= */
     .biblio-overlay {
       position: absolute;
@@ -627,7 +627,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 3%;
+      padding: 2%;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s ease;
@@ -641,11 +641,11 @@
     .biblio-card {
       background: #ffffff;
       border-radius: 0;
-      width: 94%;
-      height: 94%;
+      width: 96%;
+      height: 96%;
       max-width: none;
       max-height: none;
-      padding: 1.5rem 2.75rem 1.6rem;
+      padding: 1.25rem 2.5rem 1.35rem;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -657,8 +657,8 @@
       font-size: 1.45rem;
       font-weight: 700;
       color: var(--color-text-dark);
-      margin-bottom: 0.5rem;
-      padding-bottom: 0.4rem;
+      margin-bottom: 0.4rem;
+      padding-bottom: 0.35rem;
       border-bottom: 1px solid #eaeaea;
     }
 
@@ -668,12 +668,12 @@
       justify-content: space-between;
       flex: 1;
       overflow: hidden;
-      padding: 0.2rem 0;
+      padding: 0.15rem 0 0.1rem;
     }
 
     .biblio-card p {
-      font-size: 0.82rem;
-      line-height: 1.35;
+      font-size: 14px;
+      line-height: 1.38;
       color: #333333;
       text-indent: -1.5rem;
       padding-left: 1.5rem;
