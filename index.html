@@ -269,9 +269,15 @@
       cursor: default !important;
     }
 
+    /* Scale pin up on hover/focus and keep scaled up while actively clicked */
     .pin-btn:not(.viewed):hover, 
-    .pin-btn:not(.viewed):focus-visible {
+    .pin-btn:not(.viewed):focus-visible,
+    .pin-btn.pin-active {
       transform: translate(-50%, -100%) scale(1.25) !important;
+    }
+
+    .pin-btn.pin-active {
+      z-index: 305; /* Remains above dark overlay so mouseleave triggers correctly on move away */
     }
 
     .pin-img {
@@ -617,7 +623,7 @@
     }
 
     /* ========================================================= */
-    /* BIBLIOGRAPHY MODAL (OPTIMIZED HEIGHT, 14px TEXT, EQUAL SPACING) */
+    /* BIBLIOGRAPHY MODAL (PROPORTIONAL MARGINS, 14px TEXT)      */
     /* ========================================================= */
     .biblio-overlay {
       position: absolute;
@@ -1075,9 +1081,9 @@
           spotlightContainer.className = "spotlight-view-container " + (data.layoutClass || "");
 
           activePin = e.currentTarget;
+          activePin.classList.add('pin-active');
           alignSpotlightToPin(activePin);
           contentModal.classList.add('active');
-          e.currentTarget.classList.add('viewed');
           viewedMap.add(id);
         }
       });
@@ -1089,6 +1095,7 @@
         const pinBtn = activePin;
         const pinImg = pinBtn.querySelector('.pin-img');
         
+        pinBtn.classList.remove('pin-active');
         pinBtn.classList.add('swiveling');
         
         setTimeout(() => {
@@ -1099,6 +1106,7 @@
 
         setTimeout(() => {
           pinBtn.classList.remove('swiveling');
+          pinBtn.classList.add('viewed');
         }, 600);
       }
 
@@ -1132,6 +1140,7 @@
         p.classList.remove('viewed');
         p.classList.remove('animated');
         p.classList.remove('swiveling');
+        p.classList.remove('pin-active');
         const pinImg = p.querySelector('.pin-img');
         if (pinImg) {
           pinImg.src = 'Resources/PastedVector-25.svg';
@@ -1155,7 +1164,7 @@
       document.querySelectorAll('.pin-btn').forEach(pin => {
         const id = pin.dataset.id;
         const on = () => { 
-          if (!pin.classList.contains('viewed')) {
+          if (!pin.classList.contains('viewed') && !contentModal.classList.contains('active')) {
             hl(id).classList.add('active');
             if (id === 'indiachina' && icLeader) {
               icLeader.classList.add('active');
@@ -1171,7 +1180,10 @@
 
         pin.addEventListener('mouseenter', on);
         pin.addEventListener('focus', on);
-        pin.addEventListener('mouseleave', off);
+        pin.addEventListener('mouseleave', () => {
+          off();
+          pin.classList.remove('pin-active');
+        });
         pin.addEventListener('blur', off);
         pin.addEventListener('click', off);
       });
