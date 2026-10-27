@@ -617,32 +617,35 @@
     }
 
     /* ========================================================= */
-    /* BIBLIOGRAPHY MODAL (EXPANDED HEIGHT & MATCHED FONT SIZE)  */
+    /* BIBLIOGRAPHY MODAL (PROPORTIONAL MARGINS & SPREAD)        */
     /* ========================================================= */
     .biblio-overlay {
       position: absolute;
       inset: 0;
       background: rgba(20, 31, 82, 0.95);
       z-index: 400;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 3%;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s ease;
     }
 
     .biblio-overlay.active {
-      display: flex;
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .biblio-card {
       background: #ffffff;
       border-radius: 0;
-      width: 980px;
-      max-width: 94%;
-      height: 92%;
-      max-height: 92%;
-      padding: 2rem 2.75rem 2.25rem;
+      width: 94%;
+      height: 94%;
+      max-width: none;
+      max-height: none;
+      padding: 1.5rem 2.75rem 1.6rem;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -654,8 +657,8 @@
       font-size: 1.45rem;
       font-weight: 700;
       color: var(--color-text-dark);
-      margin-bottom: 0.85rem;
-      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.4rem;
       border-bottom: 1px solid #eaeaea;
     }
 
@@ -665,16 +668,18 @@
       justify-content: space-between;
       flex: 1;
       overflow: hidden;
+      padding: 0.2rem 0;
     }
 
     .biblio-card p {
-      font-size: 0.88rem;
-      line-height: 1.42;
+      font-size: 0.82rem;
+      line-height: 1.35;
       color: #333333;
       text-indent: -1.5rem;
       padding-left: 1.5rem;
       margin: 0;
-      word-break: break-all;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     @media (max-width: 768px) {
@@ -689,7 +694,7 @@
       .spotlight-view-container.layout-left .dialog-card { width: 90%; left: 5%; }
       .spotlight-view-container.layout-left.card-wide .dialog-card,
       .spotlight-view-container.layout-left.card-wider .dialog-card { width: 90%; }
-      .biblio-card { height: 90%; max-height: 90%; overflow-y: auto; padding: 1.25rem; }
+      .biblio-card { width: 95%; height: 92%; overflow-y: auto; padding: 1.25rem; }
       .biblio-list { justify-content: flex-start; gap: 0.75rem; overflow-y: auto; }
     }
   </style>
