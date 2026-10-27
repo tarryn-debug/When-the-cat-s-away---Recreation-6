@@ -252,7 +252,7 @@
       cursor: pointer;
       z-index: 20;
       opacity: 0;
-      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
       backface-visibility: hidden;
     }
 
@@ -269,7 +269,6 @@
       cursor: default !important;
     }
 
-    /* Smooth scale on hover/focus */
     .pin-btn:not(.viewed):hover, 
     .pin-btn:not(.viewed):focus-visible {
       transform: translate(-50%, -100%) scale(1.25) !important;
@@ -385,18 +384,17 @@
     /* CIRCULAR SPOTLIGHT FRAME */
     .spotlight-circle-frame {
       position: absolute;
-      top: 36%;
-      left: calc(55.5% + var(--dx, 0px));
+      top: var(--cy, 33%);
+      left: var(--cx, 55.5%);
       transform: translate(-50%, -50%);
       width: 132px;
       height: 132px;
       border-radius: 50%;
       border: 2px solid #ffffff;
       overflow: hidden;
-      z-index: 320;
+      z-index: 330;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
       background-color: #ffffff;
-      pointer-events: auto;
     }
 
     .spotlight-circle-frame img.spotlight-map-bg {
@@ -409,21 +407,15 @@
       display: block;
     }
 
-    /* Spotlight Pin - begins scaled to seamlessly match the map pin's hover state */
     .spotlight-pin-icon {
       position: absolute;
       top: 53.1%;
       left: 50.8%;
-      transform: translate(-50%, -100%) scale(1.25);
-      width: 21px;
+      transform: translate(-50%, -100%);
+      width: 20px;
       height: auto;
-      z-index: 325;
+      z-index: 335;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
-      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    .spotlight-pin-icon.normal-scale {
-      transform: translate(-50%, -100%) scale(1);
     }
 
     /* DIALOG CARD */
@@ -625,7 +617,7 @@
     }
 
     /* ========================================================= */
-    /* BIBLIOGRAPHY MODAL (PROPORTIONAL MARGINS, 14px TEXT)      */
+    /* BIBLIOGRAPHY MODAL (OPTIMIZED HEIGHT, 14px TEXT, EQUAL SPACING) */
     /* ========================================================= */
     .biblio-overlay {
       position: absolute;
@@ -811,8 +803,14 @@
     <div class="dark-overlay" id="content-modal">
       <div class="spotlight-view-container" id="spotlight-container">
         
+        <!-- CIRCULAR SPOTLIGHT FRAME -->
+        <div class="spotlight-circle-frame" id="spotlight-circle">
+          <img src="" id="spotlight-map-bg" alt="Regional Map Spotlight" class="spotlight-map-bg">
+          <img src="Resources/PastedVector-25.svg" alt="Location Pin" class="spotlight-pin-icon">
+        </div>
+
         <div class="spotlight-stack" id="spotlight-stack">
-          <!-- TRIANGLE BEAM + CIRCLE FRAME -->
+          <!-- TRIANGLE BEAM -->
           <div class="spotlight-beam" id="spotlight-beam">
             <div class="spotlight-triangle-clip">
               <img src="Resources/PastedVector-30.svg" alt="" class="spotlight-triangle-bg">
@@ -822,12 +820,6 @@
             <svg class="spotlight-wedge" id="spotlight-wedge" aria-hidden="true">
               <polygon id="spotlight-wedge-poly" fill="#141F52"></polygon>
             </svg>
-
-            <!-- CIRCULAR SPOTLIGHT FRAME -->
-            <div class="spotlight-circle-frame" id="spotlight-circle">
-              <img src="" id="spotlight-map-bg" alt="Regional Map Spotlight" class="spotlight-map-bg">
-              <img src="Resources/PastedVector-25.svg" alt="Location Pin" class="spotlight-pin-icon" id="spotlight-pin">
-            </div>
           </div>
 
           <!-- DIALOG CARD -->
@@ -938,18 +930,9 @@
     const cardBody = document.getElementById('card-body');
     const spotlightContainer = document.getElementById('spotlight-container');
     const spotlightMapBg = document.getElementById('spotlight-map-bg');
-    const spotlightCircle = document.getElementById('spotlight-circle');
-    const spotlightPin = document.getElementById('spotlight-pin');
 
     const viewedMap = new Set();
     let activePin = null;
-
-    // Smoothly transition spotlight pin scale when mouse leaves the circle
-    if (spotlightCircle) {
-      spotlightCircle.addEventListener('mouseleave', () => {
-        if (spotlightPin) spotlightPin.classList.add('normal-scale');
-      });
-    }
 
     // Tangent points from an external point (px, py) to a circle (cx, cy, r)
     function tangentPoints(px, py, cx, cy, r) {
@@ -1021,9 +1004,13 @@
       poly.setAttribute('points', [p1, t1, t2, p2].map(p => p.join(',')).join(' '));
     }
 
-    // Default layout (Ukraine): stack placed so circle sits directly over Ukraine pin
-    function alignDefaultLayout(pin) {
-      const app = document.getElementById('interactive-app');
+    function alignSpotlightToPin(pin) {
+      if (!pin) return;
+      if (spotlightContainer.classList.contains('layout-left')) {
+        alignLeftLayout(pin);
+        return;
+      }
+
       const stage = document.querySelector('.stage-view');
       const stack = document.getElementById('spotlight-stack');
       const circle = document.getElementById('spotlight-circle');
@@ -1033,33 +1020,18 @@
       card.style.top = '';
       card.style.bottom = '';
       stack.style.transform = '';
-      circle.style.setProperty('--dx', '0px');
 
-      const appRect = app.getBoundingClientRect();
-      const scale = appRect.width / app.offsetWidth || 1;
-
+      // Direct coordinates relative to the interactive container
       const gap = pin.offsetHeight - pinImg.offsetHeight;
       const tipX = stage.offsetLeft + pin.offsetLeft;
       const tipY = stage.offsetTop + pin.offsetTop - gap;
 
-      const c = circle.getBoundingClientRect();
-      const cx = (c.left + c.width / 2 - appRect.left) / scale;
-      const cy = (c.top + c.height / 2 - appRect.top) / scale;
+      const size = circle.offsetWidth || 132;
+      const cx = tipX - (0.508 - 0.5) * size;
+      const cy = tipY - (0.531 - 0.5) * size;
 
-      let dy = tipY - cy;
-      let dx = tipX - cx;
-
-      stack.style.transform = 'translateY(' + dy + 'px)';
-      circle.style.setProperty('--dx', dx + 'px');
-    }
-
-    function alignSpotlightToPin(pin) {
-      if (!pin) return;
-      if (spotlightContainer.classList.contains('layout-left')) {
-        alignLeftLayout(pin);
-      } else {
-        alignDefaultLayout(pin);
-      }
+      circle.style.setProperty('--cx', cx + 'px');
+      circle.style.setProperty('--cy', cy + 'px');
     }
 
     window.addEventListener('resize', () => {
@@ -1087,7 +1059,7 @@
       introModal.classList.remove('active');
     });
 
-    // 3. MAP PINS CLICK: Keep hover state on open, transition on mouse away
+    // 3. MAP PINS CLICK: Swap data and update image before opening modal
     document.querySelectorAll('.pin-btn').forEach(pin => {
       pin.addEventListener('click', (e) => {
         const id = e.currentTarget.dataset.id;
@@ -1103,14 +1075,9 @@
           spotlightContainer.className = "spotlight-view-container " + (data.layoutClass || "");
 
           activePin = e.currentTarget;
-
-          // Reset spotlight pin to match initial hover scale
-          if (spotlightPin) {
-            spotlightPin.classList.remove('normal-scale');
-          }
-
           alignSpotlightToPin(activePin);
           contentModal.classList.add('active');
+          e.currentTarget.classList.add('viewed');
           viewedMap.add(id);
         }
       });
@@ -1132,7 +1099,6 @@
 
         setTimeout(() => {
           pinBtn.classList.remove('swiveling');
-          pinBtn.classList.add('viewed');
         }, 600);
       }
 
@@ -1189,7 +1155,7 @@
       document.querySelectorAll('.pin-btn').forEach(pin => {
         const id = pin.dataset.id;
         const on = () => { 
-          if (!pin.classList.contains('viewed') && !contentModal.classList.contains('active')) {
+          if (!pin.classList.contains('viewed')) {
             hl(id).classList.add('active');
             if (id === 'indiachina' && icLeader) {
               icLeader.classList.add('active');
