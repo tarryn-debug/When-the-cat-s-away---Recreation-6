@@ -583,6 +583,39 @@
       transform: translateY(-1px);
     }
 
+    /* COMPLETION MODAL CUSTOM STYLES */
+    .completion-card {
+      max-width: 580px;
+      padding: 2.75rem 3rem 2.25rem;
+      position: relative;
+    }
+
+    .completion-illustration {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      margin: 0 auto 1.5rem;
+      display: block;
+    }
+
+    .completion-buttons {
+      display: flex;
+      gap: 1.25rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .btn-outline {
+      background: #ffffff !important;
+      color: var(--color-primary-blue) !important;
+      border: 1.5px solid var(--color-primary-blue) !important;
+    }
+
+    .btn-outline:hover {
+      background: var(--color-bg-light) !important;
+      color: var(--color-navy-dark) !important;
+    }
+
     .biblio-overlay {
       position: absolute;
       inset: 0;
@@ -767,11 +800,13 @@
 
     <!-- COMPLETION OVERLAY MODAL -->
     <div class="dark-overlay" id="completion-modal">
-      <div class="center-modal">
+      <div class="center-modal completion-card">
+        <button class="close-card-btn" id="close-completion-btn" aria-label="Close dialog">&times;</button>
+        <img src="Resources/PastedVector-6.svg" alt="Collar with US Flag buckle and cheese" class="completion-illustration">
         <h2>You have completed this interactive infographic.<br>What would you like to do next?</h2>
-        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        <div class="completion-buttons">
           <button class="action-btn" id="completion-exit-btn">Exit</button>
-          <button class="action-btn" id="completion-biblio-btn" style="background: var(--color-bg-light); color: var(--color-navy-header);">View bibliography</button>
+          <button class="action-btn btn-outline" id="completion-biblio-btn">View bibliography</button>
         </div>
       </div>
     </div>
@@ -837,7 +872,7 @@
       }
     };
 
-    // Preload regional SVG images into browser cache to prevent swap flicker
+    // Preload regional SVG images into browser cache
     Object.values(regionData).forEach(r => {
       if (r.mapImg) {
         const img = new Image();
@@ -983,7 +1018,7 @@
       introModal.classList.remove('active');
     });
 
-    // 3. MAP PINS CLICK: Swap data and update image before opening modal
+    // 3. MAP PINS CLICK
     document.querySelectorAll('.pin-btn').forEach(pin => {
       pin.addEventListener('click', (e) => {
         const id = e.currentTarget.dataset.id;
@@ -1028,7 +1063,6 @@
 
       contentModal.classList.remove('active');
       
-      // Clear image when hidden so the next click cannot show old content
       setTimeout(() => {
         spotlightMapBg.src = '';
       }, 300);
@@ -1038,9 +1072,14 @@
       }
     });
 
-    // 5. HEADER CONTROLS
+    // 5. HEADER & COMPLETION CONTROLS
     document.getElementById('btn-biblio').addEventListener('click', () => biblioOverlay.classList.add('active'));
     document.getElementById('close-biblio-btn').addEventListener('click', () => biblioOverlay.classList.remove('active'));
+    
+    document.getElementById('close-completion-btn').addEventListener('click', () => {
+      completionModal.classList.remove('active');
+    });
+
     document.getElementById('completion-biblio-btn').addEventListener('click', () => {
       completionModal.classList.remove('active');
       biblioOverlay.classList.add('active');
