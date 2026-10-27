@@ -269,15 +269,10 @@
       cursor: default !important;
     }
 
-    /* Scale pin up on hover/focus and keep scaled up while actively clicked */
     .pin-btn:not(.viewed):hover, 
     .pin-btn:not(.viewed):focus-visible,
     .pin-btn.pin-active {
       transform: translate(-50%, -100%) scale(1.25) !important;
-    }
-
-    .pin-btn.pin-active {
-      z-index: 305; /* Remains above dark overlay so mouseleave triggers correctly on move away */
     }
 
     .pin-img {
@@ -413,15 +408,23 @@
       display: block;
     }
 
+    /* Spotlight Pin with hover scaling matching Video 1 */
     .spotlight-pin-icon {
       position: absolute;
       top: 53.1%;
       left: 50.8%;
-      transform: translate(-50%, -100%);
-      width: 20px;
+      transform: translate(-50%, -100%) scale(1);
+      width: 21px;
       height: auto;
       z-index: 335;
       filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: auto;
+    }
+
+    .spotlight-pin-icon.scaled,
+    .spotlight-pin-icon:hover {
+      transform: translate(-50%, -100%) scale(1.25);
     }
 
     /* DIALOG CARD */
@@ -936,9 +939,23 @@
     const cardBody = document.getElementById('card-body');
     const spotlightContainer = document.getElementById('spotlight-container');
     const spotlightMapBg = document.getElementById('spotlight-map-bg');
+    const spotlightCircle = document.getElementById('spotlight-circle');
+    const spotlightPin = document.querySelector('.spotlight-pin-icon');
 
     const viewedMap = new Set();
     let activePin = null;
+
+    // Remove scaled hover class from spotlight pin when mouse moves away
+    if (spotlightPin) {
+      spotlightPin.addEventListener('mouseleave', () => {
+        spotlightPin.classList.remove('scaled');
+      });
+    }
+    if (spotlightCircle) {
+      spotlightCircle.addEventListener('mouseleave', () => {
+        if (spotlightPin) spotlightPin.classList.remove('scaled');
+      });
+    }
 
     // Tangent points from an external point (px, py) to a circle (cx, cy, r)
     function tangentPoints(px, py, cx, cy, r) {
@@ -1065,7 +1082,7 @@
       introModal.classList.remove('active');
     });
 
-    // 3. MAP PINS CLICK: Swap data and update image before opening modal
+    // 3. MAP PINS CLICK: Keep hover state on open, transition on mouse away
     document.querySelectorAll('.pin-btn').forEach(pin => {
       pin.addEventListener('click', (e) => {
         const id = e.currentTarget.dataset.id;
@@ -1082,6 +1099,11 @@
 
           activePin = e.currentTarget;
           activePin.classList.add('pin-active');
+
+          if (spotlightPin) {
+            spotlightPin.classList.add('scaled');
+          }
+
           alignSpotlightToPin(activePin);
           contentModal.classList.add('active');
           viewedMap.add(id);
@@ -1108,6 +1130,10 @@
           pinBtn.classList.remove('swiveling');
           pinBtn.classList.add('viewed');
         }, 600);
+      }
+
+      if (spotlightPin) {
+        spotlightPin.classList.remove('scaled');
       }
 
       contentModal.classList.remove('active');
